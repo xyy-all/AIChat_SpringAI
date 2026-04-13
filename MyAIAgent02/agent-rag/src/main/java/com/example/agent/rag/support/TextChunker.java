@@ -4,6 +4,15 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+/**
+ * 文本分块器。
+ *
+ * <p>策略是“尽量按自然边界切分”：
+ * 1. 先按空行拆段
+ * 2. 能拼进当前 chunk 的段落尽量拼进去
+ * 3. 单段过长时，再按句号/换行/空白等边界回退切分
+ * 4. 通过 overlap 保留少量上下文，降低跨 chunk 信息断裂
+ */
 public class TextChunker {
 
     private final int chunkSize;
@@ -15,6 +24,9 @@ public class TextChunker {
         this.chunkOverlap = Math.max(0, Math.min(chunkOverlap, this.chunkSize / 2));
     }
 
+    /**
+     * 对外暴露的分块入口。
+     */
     public List<String> split(String text) {
         String normalized = normalize(text);
         if (normalized.isEmpty()) {
@@ -49,6 +61,9 @@ public class TextChunker {
         return chunks;
     }
 
+    /**
+     * 双换行视为段落边界，优先保留原始段落结构。
+     */
     private List<String> splitParagraphs(String text) {
         List<String> result = new ArrayList<>();
         for (String paragraph : text.split("\\n\\s*\\n")) {
@@ -60,6 +75,9 @@ public class TextChunker {
         return result.isEmpty() ? List.of(text) : result;
     }
 
+    /**
+     * 对超长段落做二次切分，并通过 overlap 回带一小段上下文。
+     */
     private List<String> splitLongParagraph(String paragraph) {
         List<String> chunks = new ArrayList<>();
         int start = 0;
@@ -78,6 +96,9 @@ public class TextChunker {
         return chunks;
     }
 
+    /**
+     * 在允许范围内尽量往前找一个更自然的切点，避免粗暴截断。
+     */
     private int findSplitPoint(String text, int start, int maxEnd) {
         if (maxEnd >= text.length()) {
             return text.length();
@@ -101,6 +122,9 @@ public class TextChunker {
         current.setLength(0);
     }
 
+    /**
+     * 统一换行和空白格式，减少 embedding 前的噪声。
+     */
     private String normalize(String text) {
         if (text == null) {
             return "";

@@ -11,32 +11,49 @@ import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.Map;
 
+/**
+ * 文档主表实体，对应 ai_document。
+ *
+ * <p>一条记录表示“一篇文档”的生命周期和元信息，
+ * 真正用于检索的分块和向量落在 ai_document_vector。
+ */
 @TableName(value = "ai_document", autoResultMap = true)
 public class DocumentEntity implements Serializable {
 
     @TableId
+    /** 主键，系统内部文档 ID。 */
     private Long knowledgeDocumentId;
 
+    /** 业务侧传入的文档 ID，可为空。 */
     private String externalDocumentId;
 
+    /** 所属会话；为空表示全局知识。 */
     private String sessionId;
 
+    /** 展示用标题。 */
     private String title;
 
+    /** 文档来源类型，例如 text / pdf / url。 */
     private String sourceType;
 
+    /** 文档来源地址或来源标识。 */
     private String sourceUri;
 
+    /** 文档正文哈希，用于轻量去重。 */
     private String contentHash;
 
+    /** 当前文档解析器版本，便于后续重建索引。 */
     private String parserVersion;
 
+    /** 文档被切成了多少个 chunk。 */
     private Integer chunkCount;
 
     @TableField(typeHandler = EnumTypeHandler.class)
+    /** 入库状态，统一使用枚举而不是裸字符串。 */
     private RagDocumentStatus status;
 
     @TableField(typeHandler = FastJsonTypeHandler.class)
+    /** 文档级元数据。 */
     private Map<String, Object> metadata;
 
     private LocalDateTime createdAt;

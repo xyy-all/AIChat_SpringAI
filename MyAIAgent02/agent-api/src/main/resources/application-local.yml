@@ -13,7 +13,7 @@ spring:
       pool-name: AIAgentHikariPool
   ai:
     dashscope:
-      api-key: ${DASHSCOPE_API_KEY:sk-9640a51ab4474fe1ad055f1cda531c7f}
+      api-key: ${DASHSCOPE_API_KEY:sk-433bef71084d4850839de6ad0040381e}
       chat:
         options:
           model: qwen3-max

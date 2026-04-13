@@ -3,6 +3,10 @@ spring:
     name: ai-agent
   profiles:
     default: local
+  config:
+    import:
+      - optional:classpath:app-session.yml
+      - optional:classpath:app-rag.yml
 
 server:
   port: 8081
@@ -27,28 +31,3 @@ mybatis:
     default-fetch-size: 100
     default-statement-timeout: 30
     default-enum-type-handler: org.apache.ibatis.type.EnumTypeHandler
-
-app:
-  rag:
-    chunk-size: 700
-    chunk-overlap: 100
-    default-top-k: 3
-    similarity-threshold: 0.35
-    max-candidates: 2000
-  memory:
-    storage:
-      memory-cache:
-        max-sessions: 100
-        max-messages-per-session: 20
-        ttl-seconds: 3600
-      db-sync:
-        enabled: true
-        lazy-load: true
-        write-through: true
-        batch-size: 50
-        flush-interval-ms: 5000
-      summary:
-        enabled: true
-        generate-threshold: 10
-        max-summaries-per-session: 50
-        similarity-threshold: 0.7

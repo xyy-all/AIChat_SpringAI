@@ -1,25 +1,31 @@
 package com.example.agent.core.config;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.context.annotation.PropertySource;
 
 /**
- * 应用程序配置类，集中管理所有可配置参数
+ * 会话与记忆模块的自定义配置。
+ *
+ * <p>这类配置不再混在 application.yml 中，而是统一放在独立的
+ * {@code app-session.yml} 里，通过 {@code app.session.*} 前缀绑定。
  */
-@ConfigurationProperties(prefix = "app.config")
-@PropertySource(value = "classpath:application-config.properties", encoding = "UTF-8")
+@ConfigurationProperties(prefix = "app.session")
 public class AppConfiguration {
 
-    // 内存缓存配置
+    /** 内存缓存层的容量和保留策略。 */
     private MemoryCache memoryCache = new MemoryCache();
 
-    // 对话服务配置
+    /** 会话服务本身的通用限制。 */
     private Conversation conversation = new Conversation();
 
-    // ChatMemory工厂配置
+    /** Spring AI ChatMemory 的窗口大小预设。 */
     private ChatMemory chatMemory = new ChatMemory();
 
-    // Getters and Setters
+    /** 会话数据与数据库之间的同步策略。 */
+    private DbSync dbSync = new DbSync();
+
+    /** 会话摘要相关配置，当前主要用于集中管理默认值。 */
+    private Summary summary = new Summary();
+
     public MemoryCache getMemoryCache() {
         return memoryCache;
     }
@@ -44,13 +50,27 @@ public class AppConfiguration {
         this.chatMemory = chatMemory;
     }
 
-    // 内存缓存配置内部类
-    public static class MemoryCache {
-        private int maxSessions = 100;           // 最大会话数
-        private int maxMessagesPerSession = 20;  // 每个会话最大消息数
-        private int ttlSeconds = 3600;           // TTL（秒）
+    public DbSync getDbSync() {
+        return dbSync;
+    }
 
-        // Getters and Setters
+    public void setDbSync(DbSync dbSync) {
+        this.dbSync = dbSync;
+    }
+
+    public Summary getSummary() {
+        return summary;
+    }
+
+    public void setSummary(Summary summary) {
+        this.summary = summary;
+    }
+
+    public static class MemoryCache {
+        private int maxSessions = 100;
+        private int maxMessagesPerSession = 20;
+        private int ttlSeconds = 3600;
+
         public int getMaxSessions() {
             return maxSessions;
         }
@@ -76,13 +96,11 @@ public class AppConfiguration {
         }
     }
 
-    // 对话服务配置内部类
     public static class Conversation {
-        private int maxHistorySize = 20;         // 最大历史消息数
-        private int maxConversations = 100;      // 最大对话数
-        private int defaultWindowSize = 20;      // 默认窗口大小
+        private int maxHistorySize = 20;
+        private int maxConversations = 100;
+        private int defaultWindowSize = 20;
 
-        // Getters and Setters
         public int getMaxHistorySize() {
             return maxHistorySize;
         }
@@ -108,15 +126,13 @@ public class AppConfiguration {
         }
     }
 
-    // ChatMemory配置内部类
     public static class ChatMemory {
-        private int defaultWindowSize = 20;      // 默认窗口大小
-        private int smallWindowSize = 10;        // 小窗口大小
-        private int mediumWindowSize = 20;       // 中等窗口大小
-        private int largeWindowSize = 50;        // 大窗口大小
-        private int xlargeWindowSize = 100;      // 超大窗口大小
+        private int defaultWindowSize = 20;
+        private int smallWindowSize = 10;
+        private int mediumWindowSize = 20;
+        private int largeWindowSize = 50;
+        private int xlargeWindowSize = 100;
 
-        // Getters and Setters
         public int getDefaultWindowSize() {
             return defaultWindowSize;
         }
@@ -155,6 +171,93 @@ public class AppConfiguration {
 
         public void setXlargeWindowSize(int xlargeWindowSize) {
             this.xlargeWindowSize = xlargeWindowSize;
+        }
+    }
+
+    public static class DbSync {
+        private boolean enabled = true;
+        private boolean lazyLoad = true;
+        private boolean writeThrough = true;
+        private int batchSize = 50;
+        private int flushIntervalMs = 5000;
+
+        public boolean isEnabled() {
+            return enabled;
+        }
+
+        public void setEnabled(boolean enabled) {
+            this.enabled = enabled;
+        }
+
+        public boolean isLazyLoad() {
+            return lazyLoad;
+        }
+
+        public void setLazyLoad(boolean lazyLoad) {
+            this.lazyLoad = lazyLoad;
+        }
+
+        public boolean isWriteThrough() {
+            return writeThrough;
+        }
+
+        public void setWriteThrough(boolean writeThrough) {
+            this.writeThrough = writeThrough;
+        }
+
+        public int getBatchSize() {
+            return batchSize;
+        }
+
+        public void setBatchSize(int batchSize) {
+            this.batchSize = batchSize;
+        }
+
+        public int getFlushIntervalMs() {
+            return flushIntervalMs;
+        }
+
+        public void setFlushIntervalMs(int flushIntervalMs) {
+            this.flushIntervalMs = flushIntervalMs;
+        }
+    }
+
+    public static class Summary {
+        private boolean enabled = true;
+        private int generateThreshold = 10;
+        private int maxSummariesPerSession = 50;
+        private double similarityThreshold = 0.7d;
+
+        public boolean isEnabled() {
+            return enabled;
+        }
+
+        public void setEnabled(boolean enabled) {
+            this.enabled = enabled;
+        }
+
+        public int getGenerateThreshold() {
+            return generateThreshold;
+        }
+
+        public void setGenerateThreshold(int generateThreshold) {
+            this.generateThreshold = generateThreshold;
+        }
+
+        public int getMaxSummariesPerSession() {
+            return maxSummariesPerSession;
+        }
+
+        public void setMaxSummariesPerSession(int maxSummariesPerSession) {
+            this.maxSummariesPerSession = maxSummariesPerSession;
+        }
+
+        public double getSimilarityThreshold() {
+            return similarityThreshold;
+        }
+
+        public void setSimilarityThreshold(double similarityThreshold) {
+            this.similarityThreshold = similarityThreshold;
         }
     }
 }

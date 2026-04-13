@@ -1,0 +1,54 @@
+# 会话与记忆模块的自定义配置。
+# 这类配置只关注会话生命周期、内存缓存、ChatMemory 窗口和数据库同步策略。
+app:
+  session:
+    # 一级内存缓存策略，用来控制进程内最多保留多少活跃会话和消息。
+    memory-cache:
+      # 内存中最多保留多少个会话，超过后按最近最少使用策略淘汰。
+      max-sessions: 100
+      # 单个会话在内存中最多保留多少条消息，避免历史过长导致内存持续增长。
+      max-messages-per-session: 20
+      # 会话缓存的存活时间，单位秒；当前主要作为统一配置保留。
+      ttl-seconds: 3600
+    # 会话服务本身的通用限制。
+    conversation:
+      # 单次读取历史时允许带入的最大历史消息数量。
+      max-history-size: 20
+      # 系统允许维护的最大会话数预设。
+      max-conversations: 100
+      # 默认上下文窗口大小，未显式指定窗口时使用该值。
+      default-window-size: 20
+    # Spring AI ChatMemory 的窗口预设，供不同上下文长度场景直接复用。
+    chat-memory:
+      # 默认窗口大小，适合大多数普通问答。
+      default-window-size: 20
+      # 小窗口，适合短链路任务，降低 token 消耗。
+      small-window-size: 10
+      # 中窗口，作为常规默认值使用。
+      medium-window-size: 20
+      # 大窗口，适合需要更多历史上下文的连续会话。
+      large-window-size: 50
+      # 超大窗口，适合长链路复杂对话，但会增加 token 和延迟成本。
+      xlarge-window-size: 100
+    # 会话数据与数据库之间的同步策略。
+    db-sync:
+      # 是否启用数据库同步；关闭后会话只存在于内存中。
+      enabled: true
+      # 是否在首次访问时从数据库懒加载会话到内存。
+      lazy-load: true
+      # 是否在写入内存后立即写回数据库。
+      write-through: true
+      # 批量同步时的批次大小预设，便于后续扩展批处理能力。
+      batch-size: 50
+      # 异步或批量刷新数据库时的时间间隔，单位毫秒。
+      flush-interval-ms: 5000
+    # 会话摘要能力的预留配置，当前主要用于统一管理默认值。
+    summary:
+      # 是否启用摘要能力。
+      enabled: true
+      # 当消息数量达到该阈值后，可考虑触发摘要生成。
+      generate-threshold: 10
+      # 单个会话最多保留多少条摘要记录。
+      max-summaries-per-session: 50
+      # 判断摘要相似度时使用的阈值，越高越严格。
+      similarity-threshold: 0.7

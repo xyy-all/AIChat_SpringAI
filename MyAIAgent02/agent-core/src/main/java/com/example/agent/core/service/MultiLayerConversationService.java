@@ -106,6 +106,11 @@ public class MultiLayerConversationService implements IConversationService {
         this.memoryCacheMaxSessions = appConfig.getMemoryCache().getMaxSessions();
         this.memoryCacheMaxMessagesPerSession = appConfig.getMemoryCache().getMaxMessagesPerSession();
         this.memoryCacheTtlSeconds = appConfig.getMemoryCache().getTtlSeconds();
+        this.dbSyncEnabled = appConfig.getDbSync().isEnabled();
+        this.dbSyncLazyLoad = appConfig.getDbSync().isLazyLoad();
+        this.dbSyncWriteThrough = appConfig.getDbSync().isWriteThrough();
+        this.dbSyncBatchSize = appConfig.getDbSync().getBatchSize();
+        this.dbSyncFlushIntervalMs = appConfig.getDbSync().getFlushIntervalMs();
     }
 
 

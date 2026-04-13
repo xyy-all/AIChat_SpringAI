@@ -10,27 +10,42 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * 文档分块表实体，对应 ai_document_vector。
+ *
+ * <p>一条记录表示一个 chunk：
+ * 包含 chunk 文本、向量、顺序位置以及少量检索辅助元数据。
+ */
 @TableName("ai_document_vector")
 public class DocumentVectorEntity implements Serializable {
 
+    /** 分块主键。 */
     private Long documentId;
 
+    /** 关联 ai_document 的主键。 */
     private Long knowledgeDocumentId;
 
+    /** 所属会话；为空表示全局知识。 */
     private String sessionId;
 
+    /** 冗余保存来源类型，便于过滤和分析。 */
     private String documentType;
 
+    /** 冗余保存原文，便于后续排查和重建。 */
     private String documentContent;
 
+    /** 当前 chunk 在整篇文档中的顺序。 */
     private Integer chunkIndex;
 
+    /** 分块文本。 */
     private String chunkContent;
 
     @TableField(typeHandler = ListDoubleTypeHandler.class)
+    /** 向量化结果。 */
     private List<Double> embeddingVector;
 
     @TableField(typeHandler = FastJsonTypeHandler.class)
+    /** 分块级元数据。 */
     private Map<String, Object> metadata;
 
     private LocalDateTime createdAt;
@@ -42,6 +57,9 @@ public class DocumentVectorEntity implements Serializable {
     public DocumentVectorEntity() {
     }
 
+    /**
+     * 简化构造器，主要用于测试或手动构造简单 chunk。
+     */
     public DocumentVectorEntity(String sessionId, String documentType, String documentContent,
                                 String chunkContent, List<Double> embeddingVector) {
         this.sessionId = sessionId;

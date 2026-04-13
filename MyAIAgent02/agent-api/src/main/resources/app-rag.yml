@@ -1,0 +1,14 @@
+# RAG 模块的自定义配置。
+# 主要控制文档分块策略和检索召回策略。
+app:
+  rag:
+    # 单个 chunk 的目标长度；过小会降低上下文完整性，过大会影响检索精度。
+    chunk-size: 700
+    # 相邻 chunk 之间重叠的字符数，用来减少切块边界造成的信息断裂。
+    chunk-overlap: 100
+    # 未显式指定 topK 时的默认召回数量。
+    default-top-k: 3
+    # 相似度阈值，低于该阈值的候选片段会被过滤掉。
+    similarity-threshold: 0.35
+    # 每次检索时最多从数据库拉取多少个候选 chunk 参与排序。
+    max-candidates: 2000
