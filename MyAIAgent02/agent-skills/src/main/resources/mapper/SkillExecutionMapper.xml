@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.agent.skills.mapper.SkillExecutionMapper">
+
+    <!-- 结果映射 -->
+    <resultMap id="BaseResultMap" type="com.example.agent.skills.entity.SkillExecutionEntity">
+        <id column="execution_id" property="executionId" />
+        <result column="session_id" property="sessionId" />
+        <result column="skill_name" property="skillName" />
+        <result column="skill_input" property="skillInput" />
+        <result column="skill_output" property="skillOutput" />
+        <result column="execution_time_ms" property="executionTimeMs" />
+        <result column="status" property="status" />
+        <result column="error_message" property="errorMessage" />
+        <result column="created_at" property="createdAt" />
+        <result column="metadata" property="metadata"
+                typeHandler="com.example.agent.skills.handle.FastJsonTypeHandler" />
+    </resultMap>
+
+    <!-- 批量插入执行记录 -->
+    <insert id="batchInsert">
+        INSERT INTO ai_skill_execution (
+            session_id, skill_name, skill_input, skill_output,
+            execution_time_ms, status, error_message, created_at, metadata
+        ) VALUES
+        <foreach collection="list" item="item" separator=",">
+            (
+                #{item.sessionId}, #{item.skillName}, #{item.skillInput}, #{item.skillOutput},
+                #{item.executionTimeMs}, #{item.status}, #{item.errorMessage},
+                #{item.createdAt}, #{item.metadata}
+            )
+        </foreach>
+    </insert>
+
+    <!-- 根据会话ID查询执行记录 -->
+    <select id="selectBySessionId" parameterType="string" resultMap="BaseResultMap">
+        SELECT * FROM ai_skill_execution
+        WHERE session_id = #{sessionId}
+        ORDER BY created_at DESC
+    </select>
+
+    <!-- 根据技能名称查询执行记录 -->
+    <select id="selectBySkillName" parameterType="string" resultMap="BaseResultMap">
+        SELECT * FROM ai_skill_execution
+        WHERE skill_name = #{skillName}
+        ORDER BY created_at DESC
+    </select>
+
+    <!-- 查询成功的执行记录 -->
+    <select id="selectSuccessfulExecutions" resultMap="BaseResultMap">
+        SELECT * FROM ai_skill_execution
+        WHERE status = 1
+        ORDER BY created_at DESC
+    </select>
+
+    <!-- 查询失败的执行记录 -->
+    <select id="selectFailedExecutions" resultMap="BaseResultMap">
+        SELECT * FROM ai_skill_execution
+        WHERE status = 2
+        ORDER BY created_at DESC
+    </select>
+
+    <!-- 根据会话ID和技能名称查询 -->
+    <select id="selectBySessionIdAndSkillName" resultMap="BaseResultMap">
+        SELECT * FROM ai_skill_execution
+        WHERE session_id = #{sessionId} AND skill_name = #{skillName}
+        ORDER BY created_at DESC
+    </select>
+
+    <!-- 查询会话的技能执行次数 -->
+    <select id="countBySessionId" parameterType="string" resultType="int">
+        SELECT COUNT(*)
+        FROM ai_skill_execution
+        WHERE session_id = #{sessionId}
+    </select>
+
+    <!-- 查询技能的执行次数 -->
+    <select id="countBySkillName" parameterType="string" resultType="int">
+        SELECT COUNT(*)
+        FROM ai_skill_execution
+        WHERE skill_name = #{skillName}
+    </select>
+
+</mapper>

@@ -1,0 +1,50 @@
+{
+  "header": {
+    "title": "🤖 AI Agent Chat",
+    "subtitle": "Powered by Spring AI, RAG, MCP & Skills"
+  },
+  "sidebar": {
+    "documents": "📚 Documents",
+    "documentPlaceholder": "Paste document text here...",
+    "documentIdPlaceholder": "Document ID (optional)",
+    "uploadButton": "Upload Document",
+    "skills": "🛠️ Skills",
+    "skillPlaceholder": "Select a skill",
+    "skillInputPlaceholder": "Skill input...",
+    "executeButton": "Execute",
+    "info": "ℹ️ Info",
+    "infoDescription": "This AI agent uses RAG to retrieve relevant documents and can execute various skills.",
+    "backend": "Backend: Spring AI, Vector Store",
+    "frontend": "Frontend: Vue 3",
+    "sessions": "💬 Sessions",
+    "newSessionPlaceholder": "New session title...",
+    "newSessionButton": "New Session",
+    "sessionUntitled": "Untitled",
+    "sessionMessages": "messages",
+    "renameButton": "Rename",
+    "deleteButton": "Delete",
+    "noSessions": "No sessions yet. Create your first session!"
+  },
+  "chat": {
+    "placeholder": "Type your message here... (Use /skill <name> <input> for skills)",
+    "sendButton": "Send",
+    "helloMessage": "Hello! I am your AI assistant. You can chat with me, upload documents, or execute skills."
+  },
+  "footer": {
+    "description": "AI Agent Demo • Backend running at localhost:8081 • Session: ",
+    "loading": "Loading...",
+    "error": "Error"
+  },
+  "messages": {
+    "documentUploaded": "Document uploaded successfully (ID: {0})",
+    "failedUpload": "Failed to upload document",
+    "errorUpload": "Error uploading document",
+    "errorResponse": "Error: Could not get response from AI",
+    "skillExecution": "Skill \"{0}\": {1}",
+    "errorSkill": "Error executing skill: {0}"
+  },
+  "languageSwitch": {
+    "chinese": "中文",
+    "english": "English"
+  }
+}

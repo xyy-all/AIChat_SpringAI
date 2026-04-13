@@ -1,0 +1,50 @@
+{
+  "header": {
+    "title": "🤖 AI Agent Chat",
+    "subtitle": "由 Spring AI、RAG、MCP & Skills 驱动"
+  },
+  "sidebar": {
+    "documents": "📚 文档",
+    "documentPlaceholder": "在此粘贴文档文本...",
+    "documentIdPlaceholder": "文档 ID（可选）",
+    "uploadButton": "上传文档",
+    "skills": "🛠️ 技能",
+    "skillPlaceholder": "选择技能",
+    "skillInputPlaceholder": "技能输入...",
+    "executeButton": "执行",
+    "info": "ℹ️ 信息",
+    "infoDescription": "这个AI代理使用RAG检索相关文档，并可以执行各种技能。",
+    "backend": "后端: Spring AI, 向量存储",
+    "frontend": "前端: Vue 3",
+    "sessions": "💬 会话",
+    "newSessionPlaceholder": "新会话标题...",
+    "newSessionButton": "新建会话",
+    "sessionUntitled": "未命名",
+    "sessionMessages": "条消息",
+    "renameButton": "重命名",
+    "deleteButton": "删除",
+    "noSessions": "暂无会话。创建第一个会话！"
+  },
+  "chat": {
+    "placeholder": "在此输入您的消息... (使用 /skill <名称> <输入> 来调用技能)",
+    "sendButton": "发送",
+    "helloMessage": "您好！我是您的AI助手。您可以与我聊天、上传文档或执行技能。"
+  },
+  "footer": {
+    "description": "AI Agent 演示 • 后端运行于 localhost:8081 • 会话: ",
+    "loading": "加载中...",
+    "error": "错误"
+  },
+  "messages": {
+    "documentUploaded": "文档上传成功 (ID: {0})",
+    "failedUpload": "文档上传失败",
+    "errorUpload": "上传文档时出错",
+    "errorResponse": "错误：无法获取AI响应",
+    "skillExecution": "技能 \"{0}\": {1}",
+    "errorSkill": "执行技能时出错: {0}"
+  },
+  "languageSwitch": {
+    "chinese": "中文",
+    "english": "English"
+  }
+}

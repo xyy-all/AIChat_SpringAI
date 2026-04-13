@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.agent.api.mapper.StatisticsDailyMapper">
+
+    <!-- 结果映射 -->
+    <resultMap id="BaseResultMap" type="com.example.agent.api.entity.StatisticsDailyEntity">
+        <id column="stat_date" property="statDate" />
+        <result column="total_sessions" property="totalSessions" />
+        <result column="active_sessions" property="activeSessions" />
+        <result column="new_sessions" property="newSessions" />
+        <result column="total_messages" property="totalMessages" />
+        <result column="user_messages" property="userMessages" />
+        <result column="assistant_messages" property="assistantMessages" />
+        <result column="avg_message_length" property="avgMessageLength" />
+        <result column="total_tokens" property="totalTokens" />
+        <result column="skill_executions" property="skillExecutions" />
+        <result column="document_uploads" property="documentUploads" />
+        <result column="updated_at" property="updatedAt" />
+    </resultMap>
+
+    <!-- 根据日期范围查询统计记录 -->
+    <select id="selectByDateRange" resultMap="BaseResultMap">
+        SELECT * FROM ai_statistics_daily
+        WHERE stat_date BETWEEN #{startDate} AND #{endDate}
+        ORDER BY stat_date ASC
+    </select>
+
+    <!-- 查询最近的统计记录 -->
+    <select id="selectRecent" resultMap="BaseResultMap">
+        SELECT * FROM ai_statistics_daily
+        ORDER BY stat_date DESC
+        LIMIT #{limit}
+    </select>
+
+    <!-- 更新或插入统计记录（upsert） -->
+    <insert id="upsert">
+        INSERT INTO ai_statistics_daily (
+            stat_date, total_sessions, active_sessions, new_sessions,
+            total_messages, user_messages, assistant_messages,
+            avg_message_length, total_tokens, skill_executions,
+            document_uploads, updated_at
+        ) VALUES (
+            #{statDate}, #{totalSessions}, #{activeSessions}, #{newSessions},
+            #{totalMessages}, #{userMessages}, #{assistantMessages},
+            #{avgMessageLength}, #{totalTokens}, #{skillExecutions},
+            #{documentUploads}, #{updatedAt}
+        )
+        ON DUPLICATE KEY UPDATE
+            total_sessions = VALUES(total_sessions),
+            active_sessions = VALUES(active_sessions),
+            new_sessions = VALUES(new_sessions),
+            total_messages = VALUES(total_messages),
+            user_messages = VALUES(user_messages),
+            assistant_messages = VALUES(assistant_messages),
+            avg_message_length = VALUES(avg_message_length),
+            total_tokens = VALUES(total_tokens),
+            skill_executions = VALUES(skill_executions),
+            document_uploads = VALUES(document_uploads),
+            updated_at = VALUES(updated_at)
+    </insert>
+
+    <!-- 批量更新或插入统计记录 -->
+    <insert id="batchUpsert">
+        INSERT INTO ai_statistics_daily (
+            stat_date, total_sessions, active_sessions, new_sessions,
+            total_messages, user_messages, assistant_messages,
+            avg_message_length, total_tokens, skill_executions,
+            document_uploads, updated_at
+        ) VALUES
+        <foreach collection="list" item="item" separator=",">
+            (
+                #{item.statDate}, #{item.totalSessions}, #{item.activeSessions}, #{item.newSessions},
+                #{item.totalMessages}, #{item.userMessages}, #{item.assistantMessages},
+                #{item.avgMessageLength}, #{item.totalTokens}, #{item.skillExecutions},
+                #{item.documentUploads}, #{item.updatedAt}
+            )
+        </foreach>
+        ON DUPLICATE KEY UPDATE
+            total_sessions = VALUES(total_sessions),
+            active_sessions = VALUES(active_sessions),
+            new_sessions = VALUES(new_sessions),
+            total_messages = VALUES(total_messages),
+            user_messages = VALUES(user_messages),
+            assistant_messages = VALUES(assistant_messages),
+            avg_message_length = VALUES(avg_message_length),
+            total_tokens = VALUES(total_tokens),
+            skill_executions = VALUES(skill_executions),
+            document_uploads = VALUES(document_uploads),
+            updated_at = VALUES(updated_at)
+    </insert>
+
+    <!-- 获取最新的统计日期 -->
+    <select id="selectLatestStatDate" resultType="java.time.LocalDate">
+        SELECT MAX(stat_date) FROM ai_statistics_daily
+    </select>
+
+    <!-- 获取统计汇总信息 -->
+    <select id="selectSummary" resultType="com.example.agent.api.mapper.StatisticsDailyMapper$StatisticsSummary">
+        SELECT
+            COALESCE(SUM(total_sessions), 0) as totalSessions,
+            COALESCE(SUM(total_messages), 0) as totalMessages,
+            COALESCE(SUM(total_tokens), 0) as totalTokens,
+            COALESCE(SUM(skill_executions), 0) as skillExecutions,
+            COALESCE(SUM(document_uploads), 0) as documentUploads
+        FROM ai_statistics_daily
+        WHERE stat_date BETWEEN #{startDate} AND #{endDate}
+    </select>
+
+</mapper>

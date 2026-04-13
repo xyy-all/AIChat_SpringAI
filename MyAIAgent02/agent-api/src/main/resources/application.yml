@@ -1,0 +1,54 @@
+spring:
+  application:
+    name: ai-agent
+  profiles:
+    default: local
+
+server:
+  port: 8081
+
+mybatis:
+  mapper-locations:
+    - classpath:mapper/*.xml
+    - classpath*:mapper/*.xml
+  type-aliases-package:
+    - com.example.agent.core.entity
+    - com.example.agent.rag.entity
+    - com.example.agent.skills.entity
+    - com.example.agent.api.entity
+  type-handlers-package:
+    - com.example.agent.core.handle
+    - com.example.agent.rag.handle
+    - com.example.agent.skills.handle
+    - com.example.agent.api.handle
+  configuration:
+    map-underscore-to-camel-case: true
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+    default-fetch-size: 100
+    default-statement-timeout: 30
+    default-enum-type-handler: org.apache.ibatis.type.EnumTypeHandler
+
+app:
+  rag:
+    chunk-size: 700
+    chunk-overlap: 100
+    default-top-k: 3
+    similarity-threshold: 0.35
+    max-candidates: 2000
+  memory:
+    storage:
+      memory-cache:
+        max-sessions: 100
+        max-messages-per-session: 20
+        ttl-seconds: 3600
+      db-sync:
+        enabled: true
+        lazy-load: true
+        write-through: true
+        batch-size: 50
+        flush-interval-ms: 5000
+      summary:
+        enabled: true
+        generate-threshold: 10
+        max-summaries-per-session: 50
+        similarity-threshold: 0.7

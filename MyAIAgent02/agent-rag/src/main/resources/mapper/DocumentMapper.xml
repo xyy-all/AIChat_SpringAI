@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.agent.rag.mapper.DocumentMapper">
+
+    <resultMap id="DocumentResultMap" type="com.example.agent.rag.entity.DocumentEntity">
+        <id column="knowledge_document_id" property="knowledgeDocumentId" />
+        <result column="external_document_id" property="externalDocumentId" />
+        <result column="session_id" property="sessionId" />
+        <result column="title" property="title" />
+        <result column="source_type" property="sourceType" />
+        <result column="source_uri" property="sourceUri" />
+        <result column="content_hash" property="contentHash" />
+        <result column="parser_version" property="parserVersion" />
+        <result column="chunk_count" property="chunkCount" />
+        <result column="status" property="status"
+                javaType="com.example.agent.rag.enums.RagDocumentStatus"
+                typeHandler="org.apache.ibatis.type.EnumTypeHandler" />
+        <result column="metadata" property="metadata"
+                typeHandler="com.example.agent.rag.handle.FastJsonTypeHandler" />
+        <result column="created_at" property="createdAt" />
+        <result column="updated_at" property="updatedAt" />
+        <result column="is_active" property="isActive" />
+    </resultMap>
+
+    <select id="selectActiveByHashAndSessionId" resultMap="DocumentResultMap">
+        SELECT *
+        FROM ai_document
+        WHERE content_hash = #{contentHash}
+          AND is_active = true
+          <choose>
+              <when test="sessionId != null and sessionId != ''">
+                  AND session_id = #{sessionId}
+              </when>
+              <otherwise>
+                  AND session_id IS NULL
+              </otherwise>
+          </choose>
+        ORDER BY knowledge_document_id DESC
+        LIMIT 1
+    </select>
+
+    <select id="selectBySessionIdOrGlobal" resultMap="DocumentResultMap">
+        SELECT *
+        FROM ai_document
+        WHERE is_active = true
+          <choose>
+              <when test="sessionId != null and sessionId != ''">
+                  AND (session_id = #{sessionId} OR session_id IS NULL)
+              </when>
+              <otherwise>
+                  AND session_id IS NULL
+              </otherwise>
+          </choose>
+        ORDER BY updated_at DESC, knowledge_document_id DESC
+    </select>
+
+    <select id="selectActiveByIds" resultMap="DocumentResultMap">
+        SELECT *
+        FROM ai_document
+        WHERE is_active = true
+          AND knowledge_document_id IN
+          <foreach collection="ids" item="id" open="(" separator="," close=")">
+              #{id}
+          </foreach>
+    </select>
+
+    <update id="deactivateByKnowledgeDocumentId">
+        UPDATE ai_document
+        SET is_active = false, updated_at = NOW()
+        WHERE knowledge_document_id = #{knowledgeDocumentId}
+    </update>
+
+</mapper>

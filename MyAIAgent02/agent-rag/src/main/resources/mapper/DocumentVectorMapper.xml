@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.agent.rag.mapper.DocumentVectorMapper">
+
+    <resultMap id="BaseResultMap" type="com.example.agent.rag.entity.DocumentVectorEntity">
+        <id column="document_id" property="documentId" />
+        <result column="knowledge_document_id" property="knowledgeDocumentId" />
+        <result column="session_id" property="sessionId" />
+        <result column="document_type" property="documentType" />
+        <result column="document_content" property="documentContent" />
+        <result column="chunk_index" property="chunkIndex" />
+        <result column="chunk_content" property="chunkContent" />
+        <result column="embedding_vector" property="embeddingVector"
+                typeHandler="com.example.agent.rag.handle.ListDoubleTypeHandler" />
+        <result column="metadata" property="metadata"
+                typeHandler="com.example.agent.rag.handle.FastJsonTypeHandler" />
+        <result column="created_at" property="createdAt" />
+        <result column="updated_at" property="updatedAt" />
+        <result column="is_active" property="isActive" />
+    </resultMap>
+
+    <insert id="batchInsert">
+        INSERT INTO ai_document_vector (
+            knowledge_document_id, session_id, document_type, document_content, chunk_index,
+            chunk_content, embedding_vector, metadata, created_at, updated_at, is_active
+        ) VALUES
+        <foreach collection="list" item="item" separator=",">
+            (
+                #{item.knowledgeDocumentId},
+                #{item.sessionId},
+                #{item.documentType},
+                #{item.documentContent},
+                #{item.chunkIndex},
+                #{item.chunkContent},
+                #{item.embeddingVector,typeHandler=com.example.agent.rag.handle.ListDoubleTypeHandler},
+                #{item.metadata,typeHandler=com.example.agent.rag.handle.FastJsonTypeHandler},
+                #{item.createdAt},
+                #{item.updatedAt},
+                #{item.isActive}
+            )
+        </foreach>
+    </insert>
+
+    <select id="selectBySessionId" parameterType="string" resultMap="BaseResultMap">
+        SELECT *
+        FROM ai_document_vector
+        WHERE session_id = #{sessionId} AND is_active = true
+        ORDER BY chunk_index ASC
+    </select>
+
+    <select id="selectByDocumentType" parameterType="string" resultMap="BaseResultMap">
+        SELECT *
+        FROM ai_document_vector
+        WHERE document_type = #{documentType} AND is_active = true
+        ORDER BY created_at DESC
+    </select>
+
+    <select id="selectActiveDocuments" resultMap="BaseResultMap">
+        SELECT *
+        FROM ai_document_vector
+        WHERE is_active = true
+        ORDER BY created_at DESC
+    </select>
+
+    <select id="selectBySessionIdAndType" resultMap="BaseResultMap">
+        SELECT *
+        FROM ai_document_vector
+        WHERE session_id = #{sessionId} AND document_type = #{documentType} AND is_active = true
+        ORDER BY chunk_index ASC
+    </select>
+
+    <update id="deactivateByDocumentId" parameterType="long">
+        UPDATE ai_document_vector
+        SET is_active = false, updated_at = NOW()
+        WHERE document_id = #{documentId}
+    </update>
+
+    <update id="deactivateBySessionId" parameterType="string">
+        UPDATE ai_document_vector
+        SET is_active = false, updated_at = NOW()
+        WHERE session_id = #{sessionId}
+    </update>
+
+    <update id="deactivateByKnowledgeDocumentId">
+        UPDATE ai_document_vector
+        SET is_active = false, updated_at = NOW()
+        WHERE knowledge_document_id = #{knowledgeDocumentId}
+    </update>
+
+    <select id="countBySessionId" parameterType="string" resultType="int">
+        SELECT COUNT(*)
+        FROM ai_document_vector
+        WHERE session_id = #{sessionId} AND is_active = true
+    </select>
+
+    <select id="getMaxChunkIndex" resultType="int">
+        SELECT COALESCE(MAX(chunk_index), -1)
+        FROM ai_document_vector
+        WHERE session_id = #{sessionId} AND document_type = #{documentType} AND is_active = true
+    </select>
+
+    <select id="selectSearchCandidates" resultMap="BaseResultMap">
+        SELECT v.*
+        FROM ai_document_vector v
+        INNER JOIN ai_document d ON d.knowledge_document_id = v.knowledge_document_id
+        WHERE v.is_active = true
+          AND d.is_active = true
+          AND d.status = #{status,javaType=com.example.agent.rag.enums.RagDocumentStatus,typeHandler=org.apache.ibatis.type.EnumTypeHandler}
+          <choose>
+              <when test="sessionId != null and sessionId != ''">
+                  AND (d.session_id = #{sessionId} OR d.session_id IS NULL)
+              </when>
+              <otherwise>
+                  AND d.session_id IS NULL
+              </otherwise>
+          </choose>
+        ORDER BY v.updated_at DESC, v.document_id DESC
+        LIMIT #{limit}
+    </select>
+
+</mapper>

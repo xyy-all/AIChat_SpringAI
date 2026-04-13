@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.agent.api.mapper.OperationAuditMapper">
+
+    <!-- 结果映射 -->
+    <resultMap id="BaseResultMap" type="com.example.agent.api.entity.OperationAuditEntity">
+        <id column="audit_id" property="auditId" />
+        <result column="operation_type" property="operationType" />
+        <result column="session_id" property="sessionId" />
+        <result column="user_id" property="userId" />
+        <result column="operation_details" property="operationDetails"
+                typeHandler="com.example.agent.skills.handle.FastJsonTypeHandler" />
+        <result column="ip_address" property="ipAddress" />
+        <result column="user_agent" property="userAgent" />
+        <result column="created_at" property="createdAt" />
+    </resultMap>
+
+    <!-- 根据操作类型查询审计记录 -->
+    <select id="selectByOperationType" parameterType="string" resultMap="BaseResultMap">
+        SELECT * FROM ai_operation_audit
+        WHERE operation_type = #{operationType}
+        ORDER BY created_at DESC
+    </select>
+
+    <!-- 根据会话ID查询审计记录 -->
+    <select id="selectBySessionId" parameterType="string" resultMap="BaseResultMap">
+        SELECT * FROM ai_operation_audit
+        WHERE session_id = #{sessionId}
+        ORDER BY created_at DESC
+    </select>
+
+    <!-- 根据用户ID查询审计记录 -->
+    <select id="selectByUserId" parameterType="string" resultMap="BaseResultMap">
+        SELECT * FROM ai_operation_audit
+        WHERE user_id = #{userId}
+        ORDER BY created_at DESC
+    </select>
+
+    <!-- 根据时间范围查询审计记录 -->
+    <select id="selectByTimeRange" resultMap="BaseResultMap">
+        SELECT * FROM ai_operation_audit
+        WHERE created_at BETWEEN #{startTime} AND #{endTime}
+        ORDER BY created_at DESC
+    </select>
+
+    <!-- 批量插入审计记录 -->
+    <insert id="batchInsert">
+        INSERT INTO ai_operation_audit (
+            operation_type, session_id, user_id, operation_details,
+            ip_address, user_agent, created_at
+        ) VALUES
+        <foreach collection="list" item="item" separator=",">
+            (
+                #{item.operationType}, #{item.sessionId}, #{item.userId},
+                #{item.operationDetails}, #{item.ipAddress}, #{item.userAgent},
+                #{item.createdAt}
+            )
+        </foreach>
+    </insert>
+
+    <!-- 清理指定时间之前的审计记录 -->
+    <delete id="cleanupBeforeTime" parameterType="java.time.LocalDateTime">
+        DELETE FROM ai_operation_audit WHERE created_at &lt; #{beforeTime}
+    </delete>
+
+    <!-- 统计操作类型数量 -->
+    <select id="countByOperationType" resultType="com.example.agent.api.mapper.OperationAuditMapper$OperationTypeCount">
+        SELECT
+            operation_type as operationType,
+            COUNT(*) as count
+        FROM ai_operation_audit
+        WHERE created_at BETWEEN #{startTime} AND #{endTime}
+        GROUP BY operation_type
+        ORDER BY count DESC
+    </select>
+
+</mapper>

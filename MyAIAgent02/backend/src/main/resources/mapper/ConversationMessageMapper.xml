@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.aiagent.mapper.ConversationMessageMapper">
+
+    <!-- 结果映射 -->
+    <resultMap id="BaseResultMap" type="com.example.aiagent.entity.ConversationMessageEntity">
+        <id column="message_id" property="messageId" />
+        <result column="session_id" property="sessionId" />
+        <result column="message_index" property="messageIndex" />
+        <result column="role" property="role" />
+        <result column="content" property="content" />
+        <result column="tokens" property="tokens" />
+        <result column="model" property="model" />
+        <result column="temperature" property="temperature" />
+        <result column="created_at" property="createdAt" />
+        <result column="metadata" property="metadata" 
+                typeHandler="com.example.aiagent.handle.FastJsonTypeHandler" />
+        <result column="is_deleted" property="isDeleted" />
+    </resultMap>
+
+    <!-- 批量插入消息 -->
+    <insert id="batchInsert">
+        INSERT INTO ai_conversation_message (
+            session_id, message_index, role, content, 
+            tokens, model, temperature, created_at, metadata, is_deleted
+        ) VALUES
+        <foreach collection="list" item="item" separator=",">
+            (
+                #{item.sessionId}, #{item.messageIndex}, #{item.role}, #{item.content},
+                #{item.tokens}, #{item.model}, #{item.temperature}, #{item.createdAt}, 
+                #{item.metadata}, #{item.isDeleted}
+            )
+        </foreach>
+    </insert>
+
+    <!-- 批量插入或更新消息 -->
+    <insert id="upsertBatch" parameterType="list">
+        INSERT INTO ai_conversation_message
+            (session_id, message_index, role, content, tokens, model, temperature, created_at, metadata, is_deleted)
+        VALUES
+        <foreach collection="list" item="item" separator=",">
+            (#{item.sessionId}, #{item.messageIndex}, #{item.role},
+             #{item.content}, #{item.tokens}, #{item.model}, #{item.temperature},
+             #{item.createdAt}, #{item.metadata}, #{item.isDeleted})
+        </foreach>
+        ON DUPLICATE KEY UPDATE
+            role = VALUES(role),
+            content = VALUES(content),
+            tokens = VALUES(tokens),
+            model = VALUES(model),
+            temperature = VALUES(temperature),
+            created_at = VALUES(created_at),
+            metadata = VALUES(metadata),
+            is_deleted = VALUES(is_deleted)
+    </insert>
+
+    <!-- 根据会话ID查询消息（未删除的） -->
+    <select id="selectBySessionId" parameterType="string" resultMap="BaseResultMap">
+        SELECT * FROM ai_conversation_message 
+        WHERE session_id = #{sessionId} AND is_deleted = false 
+        ORDER BY message_index ASC
+    </select>
+
+    <!-- 根据会话ID和消息索引查询 -->
+    <select id="selectBySessionIdAndIndex" resultMap="BaseResultMap">
+        SELECT * FROM ai_conversation_message 
+        WHERE session_id = #{sessionId} AND message_index = #{messageIndex}
+    </select>
+
+    <!-- 查询会话的消息数量 -->
+    <select id="countBySessionId" parameterType="string" resultType="int">
+        SELECT COUNT(*) 
+        FROM ai_conversation_message 
+        WHERE session_id = #{sessionId} AND is_deleted = false
+    </select>
+
+    <!-- 逻辑删除消息 -->
+    <update id="deleteBySessionId" parameterType="string">
+        UPDATE ai_conversation_message SET is_deleted = true WHERE session_id = #{sessionId}
+    </update>
+
+    <!-- 物理删除消息（谨慎使用） -->
+    <delete id="deleteBySessionIdPermanently" parameterType="string">
+        DELETE FROM ai_conversation_message WHERE session_id = #{sessionId}
+    </delete>
+
+
+    <!-- 根据消息ID查询 -->
+    <select id="selectByMessageId" parameterType="long" resultMap="BaseResultMap">
+        SELECT * FROM ai_conversation_message WHERE message_id = #{messageId}
+    </select>
+
+    <!-- 查询最近的消息 -->
+    <select id="selectRecentMessages" resultMap="BaseResultMap">
+        SELECT * FROM ai_conversation_message 
+        WHERE session_id = #{sessionId} AND is_deleted = false 
+        ORDER BY message_index DESC 
+        LIMIT #{limit}
+    </select>
+
+    <!-- 获取会话的最大消息索引 -->
+    <select id="getMaxMessageIndex" parameterType="string" resultType="int">
+        SELECT COALESCE(MAX(message_index), -1)
+        FROM ai_conversation_message
+        WHERE session_id = #{sessionId} AND is_deleted = false
+    </select>
+
+</mapper>

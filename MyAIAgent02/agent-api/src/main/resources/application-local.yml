@@ -1,0 +1,36 @@
+spring:
+  datasource:
+    url: ${DB_URL:jdbc:mysql://localhost:3306/aichat?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true}
+    username: ${DB_USERNAME:root}
+    password: ${DB_PASSWORD:ms123!@#}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 5
+      connection-timeout: 30000
+      idle-timeout: 600000
+      max-lifetime: 1800000
+      pool-name: AIAgentHikariPool
+  ai:
+    dashscope:
+      api-key: ${DASHSCOPE_API_KEY:sk-9640a51ab4474fe1ad055f1cda531c7f}
+      chat:
+        options:
+          model: qwen3-max
+          temperature: 0.7
+      embedding:
+        options:
+          model: text-embedding-v2
+
+logging:
+  level:
+    com.example.agent: DEBUG
+    com.example.agent.core: DEBUG
+    com.example.agent.rag: DEBUG
+    com.example.agent.skills: DEBUG
+    com.example.agent.mcp: DEBUG
+    com.example.agent.api: DEBUG
+    org.apache.ibatis: DEBUG
+    org.springframework.ai: INFO
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
