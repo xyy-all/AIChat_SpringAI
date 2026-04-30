@@ -5,26 +5,17 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 /**
  * RAG 模块的可调参数。
  *
- * <p>这里集中管理分块大小、召回数量和相似度阈值，
- * 避免这些数字散落在业务代码里。
+ * <p>除了分块和召回参数外，这里也集中管理向量库后端的选择和 Qdrant 连接配置。
  */
 @ConfigurationProperties(prefix = "app.rag")
 public class RagProperties {
 
-    /** 单个 chunk 的目标长度。 */
     private int chunkSize = 700;
-
-    /** 相邻 chunk 之间保留的重叠字符数。 */
     private int chunkOverlap = 100;
-
-    /** 未显式传入 topK 时使用的默认召回数量。 */
     private int defaultTopK = 3;
-
-    /** 低于该阈值的候选 chunk 会被过滤掉。 */
     private double similarityThreshold = 0.35d;
-
-    /** 从数据库里最多拉多少个候选 chunk 参与排序。 */
     private int maxCandidates = 2000;
+    private VectorStoreProperties vectorStore = new VectorStoreProperties();
 
     public int getChunkSize() {
         return chunkSize;
@@ -64,5 +55,123 @@ public class RagProperties {
 
     public void setMaxCandidates(int maxCandidates) {
         this.maxCandidates = maxCandidates;
+    }
+
+    public VectorStoreProperties getVectorStore() {
+        return vectorStore;
+    }
+
+    public void setVectorStore(VectorStoreProperties vectorStore) {
+        this.vectorStore = vectorStore;
+    }
+
+    public static class VectorStoreProperties {
+        private Provider provider = Provider.DATABASE;
+        private boolean localFallbackEnabled = true;
+        private QdrantProperties qdrant = new QdrantProperties();
+
+        public Provider getProvider() {
+            return provider;
+        }
+
+        public void setProvider(Provider provider) {
+            this.provider = provider;
+        }
+
+        public boolean isLocalFallbackEnabled() {
+            return localFallbackEnabled;
+        }
+
+        public void setLocalFallbackEnabled(boolean localFallbackEnabled) {
+            this.localFallbackEnabled = localFallbackEnabled;
+        }
+
+        public QdrantProperties getQdrant() {
+            return qdrant;
+        }
+
+        public void setQdrant(QdrantProperties qdrant) {
+            this.qdrant = qdrant;
+        }
+    }
+
+    public static class QdrantProperties {
+        private String host = "localhost";
+        private int grpcPort = 6334;
+        private boolean useTls = false;
+        private String apiKey;
+        private String collectionName = "ai_document_chunks";
+        private boolean initializeSchema = false;
+        private int vectorSize;
+        private int timeoutSeconds = 10;
+
+        public String getHost() {
+            return host;
+        }
+
+        public void setHost(String host) {
+            this.host = host;
+        }
+
+        public int getGrpcPort() {
+            return grpcPort;
+        }
+
+        public void setGrpcPort(int grpcPort) {
+            this.grpcPort = grpcPort;
+        }
+
+        public boolean isUseTls() {
+            return useTls;
+        }
+
+        public void setUseTls(boolean useTls) {
+            this.useTls = useTls;
+        }
+
+        public String getApiKey() {
+            return apiKey;
+        }
+
+        public void setApiKey(String apiKey) {
+            this.apiKey = apiKey;
+        }
+
+        public String getCollectionName() {
+            return collectionName;
+        }
+
+        public void setCollectionName(String collectionName) {
+            this.collectionName = collectionName;
+        }
+
+        public boolean isInitializeSchema() {
+            return initializeSchema;
+        }
+
+        public void setInitializeSchema(boolean initializeSchema) {
+            this.initializeSchema = initializeSchema;
+        }
+
+        public int getVectorSize() {
+            return vectorSize;
+        }
+
+        public void setVectorSize(int vectorSize) {
+            this.vectorSize = vectorSize;
+        }
+
+        public int getTimeoutSeconds() {
+            return timeoutSeconds;
+        }
+
+        public void setTimeoutSeconds(int timeoutSeconds) {
+            this.timeoutSeconds = timeoutSeconds;
+        }
+    }
+
+    public enum Provider {
+        DATABASE,
+        QDRANT
     }
 }

@@ -1,14 +1,34 @@
 # RAG 模块的自定义配置。
-# 主要控制文档分块策略和检索召回策略。
+# 这里统一管理分块参数、召回参数，以及向量库后端的选择策略。
 app:
   rag:
-    # 单个 chunk 的目标长度；过小会降低上下文完整性，过大会影响检索精度。
+    # 单个 chunk 的目标长度；过小会影响上下文完整性，过大会降低检索精度。
     chunk-size: 700
-    # 相邻 chunk 之间重叠的字符数，用来减少切块边界造成的信息断裂。
+    # 相邻 chunk 之间的重叠字符数，用来减少切块边界带来的信息断裂。
     chunk-overlap: 100
-    # 未显式指定 topK 时的默认召回数量。
+    # 未显式指定 topK 时使用的默认召回数量。
     default-top-k: 3
     # 相似度阈值，低于该阈值的候选片段会被过滤掉。
     similarity-threshold: 0.35
-    # 每次检索时最多从数据库拉取多少个候选 chunk 参与排序。
+    # 数据库兜底模式下，最多从 ai_document_vector 中拉多少候选 chunk 参与排序。
     max-candidates: 2000
+    vector-store:
+      # 本地默认直接连接本机 Qdrant；如果 Qdrant 暂时不可用，仍允许自动降级到数据库检索。
+      provider: QDRANT
+      # 当首选向量库不可用时，是否允许自动降级到数据库检索。
+      local-fallback-enabled: true
+      qdrant:
+        # 下面这组配置仅在 provider=QDRANT 时生效。
+        host: localhost
+        grpc-port: 6334
+        use-tls: false
+        api-key:
+        # Qdrant collection 名称，建议在不同项目间保持隔离。
+        collection-name: ai_document_chunks
+        # 向量维度需要与 embedding 模型保持一致。当前 text-embedding-v2 对应 1536 维。
+        # 当本地还没有历史向量时，会使用这个值初始化 collection。
+        vector-size: 1536
+        # 本地开发允许自动初始化 collection，避免首次接入时报“集合不存在”。
+        initialize-schema: true
+        # gRPC 调用超时时间，单位秒。
+        timeout-seconds: 10

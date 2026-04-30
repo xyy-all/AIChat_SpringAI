@@ -37,3 +37,18 @@ logging:
     org.springframework.ai: INFO
     org.hibernate.SQL: WARN
     org.hibernate.type.descriptor.sql.BasicBinder: WARN
+
+app:
+  rag:
+    vector-store:
+      provider: QDRANT
+      local-fallback-enabled: false
+      qdrant:
+        host: ${QDRANT_HOST}
+        grpc-port: ${QDRANT_GRPC_PORT:6334}
+        use-tls: ${QDRANT_USE_TLS:false}
+        api-key: ${QDRANT_API_KEY:}
+        collection-name: ${QDRANT_COLLECTION_NAME:ai_document_chunks}
+        initialize-schema: ${QDRANT_INITIALIZE_SCHEMA:false}
+        vector-size: ${EMBEDDING_VECTOR_SIZE:1536}
+        timeout-seconds: ${QDRANT_TIMEOUT_SECONDS:10}
